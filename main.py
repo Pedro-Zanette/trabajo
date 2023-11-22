@@ -99,9 +99,6 @@ class DetectarVeiculo:
             self.detec.append(centro)
             cv2.circle(frame, (centro_x, centro_y), 2, (0, 255, 255), -1)
         
-        self.contador_veiculos.contar_veiculos(self.detec)
-        cv2.putText(frame, self.contador_veiculos.texto_contagem, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
-        
 class Video:
     def __init__(self, caminho_video):
         self.captura = cv2.VideoCapture(caminho_video)
@@ -119,28 +116,21 @@ class Video:
             if self.frame is None:
                 break
 
-            roi = self.selecao_roi.selecionar_area(self.frame)
-            roi_tons_cinza = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-            roi_blur = cv2.GaussianBlur(roi_tons_cinza, (5, 5), 5)
-
-            subtraido = self.subtracao_fundo.aplicar_subtracao(roi_blur)
             
-            dilatado = self.aplicar_filtros(subtraido)
-
-            self.selecao_roi.desenhar_linhas(self.frame)
 
             deteccoes = self.deteccao_veiculo.detectar_veiculo(self.frame, dilatado)
 
-            contagem_frame = self.contador_veiculos.contar_veiculos(deteccoes)
+            contagem_frame = len(deteccoes)
             contagem_total += contagem_frame
 
-            cv2.putText(self.frame, self.contador_veiculos.texto_contagem, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+            texto_contagem = f"Carros detectados: {contagem_total}"
+            self.inserir_texto_na_tela(self.frame, texto_contagem)
 
             cv2.imshow('Video c/ filtros', dilatado)
             cv2.imshow("ROI", roi)
             cv2.imshow("Frame", self.frame)
 
-            if cv2.waitKey(1) == ord('q'):  # Pressionar q para fechar
+            if cv2.waitKey(1) == ord('q'):  
                 break
 
         self.captura.release()
@@ -150,6 +140,7 @@ class Video:
     
     def inserir_texto_na_tela(self, frame, texto, posicao=(10, 30), cor=(0, 255, 255), tamanho_fonte=1, espessura=2):
         cv2.putText(frame, texto, posicao, cv2.FONT_HERSHEY_SIMPLEX, tamanho_fonte, cor, espessura)
+
 
     def fazer_contagem(self):
         contagem_total = 0
@@ -170,7 +161,8 @@ class Video:
 
             deteccoes = self.deteccao_veiculo.detectar_veiculo(self.frame, dilatado)
 
-            contagem_frame = self.contador_veiculos.contar_veiculos(deteccoes)
+           
+            contagem_frame = len(deteccoes)
             contagem_total += contagem_frame
 
             texto_contagem = f"Carros detectados: {contagem_total}"
@@ -186,7 +178,7 @@ class Video:
         self.captura.release()
         cv2.destroyAllWindows()
 
-        return contagem_total
+        return contagem_total  
 
     def processar_video(self):
         while True:
